@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package rasp;
+service Rasp {
+    rpc GetState (Empty) returns (State) {}
+}
+
+message Empty {}
+
+message State {
+    bool opened = 1;
+}

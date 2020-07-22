@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package sensor;
+service SensorManager {
+    rpc Register (Sensor) returns (Result) {}
+    rpc Get (Sensor) returns (Result) {}
+}
+
+message Sensor {
+    int32 room_id = 1;
+    string host = 2;
+}
+
+message Result {
+    repeated Sensor sensors = 1;
+    bool success = 2;
+}

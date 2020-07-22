@@ -1,0 +1,38 @@
+version: '3'
+services:
+  master:
+    build: ./master
+    ports:
+      - 8080:8080
+    volumes:
+      - ./master/:/work
+    command: ['python', 'app.py']
+    links:
+      - rasp1
+      - rasp2
+      - room
+      - sensor
+
+  rasp1:
+    build: ./rasp
+    volumes:
+      - ./rasp/:/work
+    command: ['python', 'app.py']
+
+  rasp2:
+    build: ./rasp
+    volumes:
+      - ./rasp:/work
+    command: ['python', 'app.py']
+
+  room:
+    build: ./room
+    volumes:
+      - ./room/:/work
+    command: ['python', 'app.py']
+
+  sensor:
+    build: ./sensor
+    volumes:
+      - ./sensor/:/work
+    command: ['python', 'app.py']

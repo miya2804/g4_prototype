@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package room;
+service RoomManager {
+    rpc Register (Room) returns (Result) {}
+    rpc Signin (Room) returns (Result) {}
+}
+
+message Room {
+    int32 id = 1;
+    string password = 2;
+}
+
+message Result {
+    int32 id = 1;
+    bool success = 2;
+}
