@@ -12,6 +12,7 @@ services:
       - rasp2
       - room
       - sensor
+      - sensor-db
 
   rasp1:
     build: ./rasp
@@ -36,3 +37,13 @@ services:
     volumes:
       - ./sensor/:/work
     command: ['python', 'app.py']
+
+  sensor-db:
+    build: ./sensor-db
+    ports:
+      - 3306:3306
+    volumes:
+      - ./sensor-db/db/data:/var/lib/mysql #永続化
+      - ./sensor-db/db/init:/docker-entrypoint-initdb.d #初期db
+    environment:
+      - MYSQL_ROOT_PASSWORD=password
