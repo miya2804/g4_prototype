@@ -12,7 +12,6 @@ services:
       - rasp2
       - room
       - sensor
-      - sensor-db
 
   rasp1:
     build: ./rasp
@@ -34,14 +33,14 @@ services:
 
   sensor:
     build: ./sensor
+    links:
+      - sensor-db
     volumes:
       - ./sensor/:/work
     command: ['python', 'app.py']
 
   sensor-db:
     build: ./sensor-db
-    ports:
-      - 3306:3306
     volumes:
       - sensor-db:/var/lib/mysql
       - ./sensor-db/db:/docker-entrypoint-initdb.d #初期db
