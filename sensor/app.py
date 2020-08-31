@@ -7,6 +7,7 @@ import grpc
 from services import sensor_manager_pb2, sensor_manager_pb2_grpc
 
 import mysql.connector as db
+import configparser
 
 N_DUMMY_SENSORS = 2
 DUMMY_ROOM_ID = 1
@@ -20,13 +21,15 @@ class SensorManagerServicer(sensor_manager_pb2_grpc.SensorManagerServicer):
         super(SensorManagerServicer, self).__init__(*args, **kwargs)
 
     def Register(self, request, context):
+        config = configparser.ConfigParser()
+        config.read('config.ini')
         try:
             cnx = db.connect(
-                host='sensor-db',
-                port='3306',
-                user='root',
-                password='password',
-                database='sensors'
+                host=config.get('sensor-db', 'host'),
+                port=config.getint('sensor-db', 'port'),
+                user=config.get('sensor-db', 'user'),
+                password=config.get('sensor-db', 'password'),
+                database=config.get('sensor-db', 'database')
             )
             cur = cnx.cursor()
             cur.execute('insert into sensors values (null, %s, %s)',
