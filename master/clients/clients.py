@@ -62,6 +62,6 @@ class RaspClient(ClientBase):
         return state.opened
 
     @classmethod
-    def get_state_with_address(cls, addr):
-        client = cls(addr)
+    def get_state_with_address(cls, *args, **kwargs):
+        client = cls(*args, **kwargs)
         return client.get_state()

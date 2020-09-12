@@ -43,7 +43,8 @@ def get_states(room_id):
     # messageが修正されたらIDに修正
     for idx, sensor in enumerate(sensors):
         addr = '{}:{}'.format(sensor.host, config.get('sensor', 'Port'))
-        opened = RaspClient.get_state_with_address(addr)
+        opened = RaspClient.get_state_with_address(addr,
+                                                   timeout=config.getint('sensor', 'Timeout'))
         resp[idx] = {'state': {'opened': opened}}
 
     return Response(response=json.dumps(resp), status=200)
