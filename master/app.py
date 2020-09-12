@@ -15,7 +15,7 @@ DUMMY_HOST='127.0.0.1:8080'
 
 app = Flask(__name__)
 
-@app.route('/', methods=['GET'])
+@app.route('/room', methods=['GET'])
 def get_states():
     with grpc.insecure_channel('room:50051') as channel:
         stub = room_manager_pb2_grpc.RoomManagerStub(channel)
