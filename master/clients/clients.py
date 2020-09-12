@@ -5,12 +5,10 @@ from services import room_manager_pb2, room_manager_pb2_grpc
 from services import sensor_manager_pb2, sensor_manager_pb2_grpc
 
 
-TIMEOUT = 5
-
-
 class ClientBase():
-    def __init__(self, addr):
+    def __init__(self, addr, timeout=None):
         self.addr = addr
+        self.timeout= timeout
 
 
 class RoomClient(ClientBase):
@@ -18,7 +16,7 @@ class RoomClient(ClientBase):
         with grpc.insecure_channel(self.addr) as channel:
             stub = room_manager_pb2_grpc.RoomManagerStub(channel)
             room = room_manager_pb2.Room(password=password)
-            result = stub.Register(room)
+            result = stub.Register(room, timeout=self.timeout)
         
         return result.id, result.success
 
@@ -27,7 +25,7 @@ class RoomClient(ClientBase):
             stub = room_manager_pb2_grpc.RoomManagerStub(channel)
             room = room_manager_pb2.Room(id=id_,
                                          password=password)
-            result = stub.Signin(room)
+            result = stub.Signin(room, timeout=self.timeout)
             
         return result.success
 
@@ -37,7 +35,7 @@ class SensorClient(ClientBase):
         with grpc.insecure_channel(self.addr) as channel:
             stub = sensor_manager_pb2_grpc.SensorManagerStub(channel)
             sensor = sensor_manager_pb2.Sensor(room_id=room_id)
-            result = stub.Get(sensor)
+            result = stub.Get(sensor, timeout=self.timeout)
 
         return result.sensors, result.success
 
@@ -46,7 +44,7 @@ class SensorClient(ClientBase):
             stub = sensor_manager_pb2_grpc.SensorManagerStub(channel)
             sensor = sensor_manager_pb2.Sensor(room_id=room_id,
                                                host=host)
-            result = stub.Register(sensor)
+            result = stub.Register(sensor, timeout=self.timeout)
 
         return result.sensors[0].room_id, result.success
 
@@ -57,7 +55,7 @@ class RaspClient(ClientBase):
             stub = rasp_pb2_grpc.RaspStub(channel)
             empty = rasp_pb2.Empty()
             try:
-                state = stub.GetState(empty, timeout=TIMEOUT)
+                state = stub.GetState(empty, timeout=self.timeout)
             except:
                 return None
 

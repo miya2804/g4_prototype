@@ -1,4 +1,5 @@
 import json
+import configparser
 
 import grpc
 from flask import Flask, request, jsonify, Response
@@ -9,12 +10,20 @@ from services import sensor_manager_pb2, sensor_manager_pb2_grpc
 
 from clients import RoomClient, SensorClient, RaspClient
 
-DEFAULT_PORT = 50051
+CONFIG_PATH = 'config.ini'
+config = configparser.ConfigParser()
+config.read(CONFIG_PATH)
 
 app = Flask(__name__)
 
-room_client = RoomClient('room:50051')
-sensor_client = SensorClient('sensor:50051')
+room_addr = '{}:{}'.format(config.get('room', 'Host'),
+                           config.get('room', 'Port'))
+sensor_addr = '{}:{}'.format(config.get('sensor', 'Host'),
+                             config.get('sensor', 'Port'))
+room_client = RoomClient(room_addr,
+                         timeout=config.getint('room', 'Timeout'))
+sensor_client = SensorClient(sensor_addr,
+                             timeout=config.getint('sensor', 'Timeout'))
 
 @app.route('/room/<room_id>', methods=['GET'])
 def get_states(room_id):
@@ -34,7 +43,7 @@ def get_states(room_id):
     # FIX センサーのデータにIDが存在しないため,一旦インデックスで代用
     # messageが修正されたらIDに修正
     for idx, sensor in enumerate(sensors):
-        addr = '{}:{}'.format(sensor.host, DEFAULT_PORT)
+        addr = '{}:{}'.format(sensor.host, config.get('sensor', 'Port'))
         opened = RaspClient.get_state_with_address(addr)
         resp[idx] = {'state': {'opened': opened}}
 
@@ -72,4 +81,5 @@ def register_sensor():
     return Response(response=json.dumps(resp), status=200)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8080)
+    app.run(host=config.get('master', 'Host'),
+            port=config.getint('master', 'Port'))
