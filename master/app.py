@@ -1,7 +1,7 @@
 import json
 
 import grpc
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, Response
 
 from services import rasp_pb2, rasp_pb2_grpc
 from services import room_manager_pb2, room_manager_pb2_grpc
@@ -41,7 +41,7 @@ def get_states():
         state = stub.GetState(empty)
         resp[DUMMY_RASP2_ID] = {'state': {'opened': state.opened}}
 
-    return jsonify(resp)
+    return Response(response=json.dumps(resp), status=200)
 
 @app.route('/room', methods=['POST'])
 def register_room():
@@ -51,7 +51,8 @@ def register_room():
         result = stub.Register(room)
 
     resp = {'id': result.id, 'success': result.success}
-    return jsonify(resp)
+
+    return Response(response=json.dumps(resp), status=200)
 
 @app.route('/sensor', methods=['POST'])
 def register_sensor():
@@ -62,7 +63,8 @@ def register_sensor():
         result = stub.Register(sensor)
 
     resp = {'id': result.sensors[0].room_id, 'success': result.success}
-    return jsonify(resp)
+
+    return Response(response=json.dumps(resp), status=200)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080)
