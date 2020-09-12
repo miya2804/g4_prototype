@@ -45,10 +45,18 @@ def get_states():
 
 @app.route('/room', methods=['POST'])
 def register_room():
+    payload = request.json
+    password = payload.get('password')
+    if password is None:
+        return Response(response='Bad Request', status=400)
+
     with grpc.insecure_channel('room:50051') as channel:
         stub = room_manager_pb2_grpc.RoomManagerStub(channel)
-        room = room_manager_pb2.Room(password=DUMMY_PASSWORD)
+        room = room_manager_pb2.Room(password=password)
         result = stub.Register(room)
+
+    if not result.success:
+        return Response(response='Internal Server Error', status=500)
 
     resp = {'id': result.id, 'success': result.success}
 
