@@ -1,5 +1,6 @@
 import json
 import configparser
+from http import HTTPStatus
 
 from flask import Flask, request, jsonify, Response
 
@@ -28,15 +29,18 @@ sensor_client = SensorClient(sensor_addr,
 def get_states(room_id):
     password = request.args.get('password')
     if password is None:
-        return Response(response='Bad Request', status=400)
+        return Response(response='Bad Request',
+                        status=HTTPStatus.BAD_REQUEST)
 
     success = room_client.signin(int(room_id), password)
     if not success:
-        return Response(response='Bad Request', status=400)
+        return Response(response='Bad Request',
+                        status=HTTPStatus.BAD_REQUEST)
 
     sensors, success = sensor_client.get(int(room_id))
     if not success:
-        return Response(response='Internal Server Error', status=500)
+        return Response(response='Internal Server Error',
+                        status=HTTPStatus.INTERNAL_SERVER_ERROR)
 
     resp = {}
     # FIX センサーのデータにIDが存在しないため,一旦インデックスで代用
@@ -47,22 +51,26 @@ def get_states(room_id):
                                                    timeout=config.getint('sensor', 'Timeout'))
         resp[idx] = {'state': {'opened': opened}}
 
-    return Response(response=json.dumps(resp), status=200)
+    return Response(response=json.dumps(resp),
+                    status=HTTPStatus.OK)
 
 @app.route('/room', methods=['POST'])
 def register_room():
     payload = request.json
     password = payload.get('password')
     if password is None:
-        return Response(response='Bad Request', status=400)
+        return Response(response='Bad Request',
+                        status=HTTPStatus.BAD_REQUEST)
 
     id_, success = room_client.register(password)
     if not success:
-        return Response(response='Internal Server Error', status=500)
+        return Response(response='Internal Server Error',
+                        status=HTTPStatus.INTERNAL_SERVER_ERROR)
 
     resp = {'id': id_, 'success': success}
 
-    return Response(response=json.dumps(resp), status=200)
+    return Response(response=json.dumps(resp),
+                    status=HTTPStatus.OK)
 
 @app.route('/sensor', methods=['POST'])
 def register_sensor():
@@ -70,15 +78,18 @@ def register_sensor():
     room_id = payload.get('room_id')
     host = payload.get('host')
     if room_id is None or host is None:
-        return Response(response='Bad Request', status=400)
+        return Response(response='Bad Request',
+                        status=HTTPStatus.BAD_REQUEST)
 
     id_, success = sensor_client.register(room_id, host)
     if not success:
-        return Response(response='Internal Server Error', status=500)
+        return Response(response='Internal Server Error',
+                        status=HTTPStatus.INTERNAL_SERVER_ERROR)
 
     resp = {'id': id_, 'success': success}
 
-    return Response(response=json.dumps(resp), status=200)
+    return Response(response=json.dumps(resp),
+                    status=HTTPStatus.OK)
 
 if __name__ == '__main__':
     app.run(host=config.get('master', 'Host'),
