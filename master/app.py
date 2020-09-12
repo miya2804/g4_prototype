@@ -64,11 +64,20 @@ def register_room():
 
 @app.route('/sensor', methods=['POST'])
 def register_sensor():
+    payload = request.json
+    room_id = payload.get('room_id')
+    host = payload.get('host')
+    if room_id is None or host is None:
+        return Response(response='Bad Request', status=400)
+
     with grpc.insecure_channel('sensor:50051') as channel:
         stub = sensor_manager_pb2_grpc.SensorManagerStub(channel)
-        sensor = sensor_manager_pb2.Sensor(room_id=DUMMY_ROOM_ID,
-                                           host=DUMMY_HOST)
+        sensor = sensor_manager_pb2.Sensor(room_id=room_id,
+                                           host=host)
         result = stub.Register(sensor)
+
+    if not result.success:
+        return Response(response='Internal Server Error', status=500)
 
     resp = {'id': result.sensors[0].room_id, 'success': result.success}
 
