@@ -1,7 +1,6 @@
 import json
 import configparser
 
-import grpc
 from flask import Flask, request, jsonify, Response
 
 from services import rasp_pb2, rasp_pb2_grpc
