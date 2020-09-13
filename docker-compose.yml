@@ -29,7 +29,7 @@ services:
     build: ./room
     volumes:
       - ./room/:/work
-    command: ['python', 'app.py']
+    command: ['python', '-m', 'app']
     links:
       - room-db
 
