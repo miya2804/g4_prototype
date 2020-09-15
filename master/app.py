@@ -25,7 +25,7 @@ room_client = RoomClient(room_addr,
 sensor_client = SensorClient(sensor_addr,
                              timeout=config.getint('sensor', 'Timeout'))
 
-@app.route('/room/<room_id>', methods=['GET'])
+@app.route('/api/room/<room_id>', methods=['GET'])
 def get_states(room_id):
     password = request.args.get('password')
     if password is None:
@@ -54,7 +54,7 @@ def get_states(room_id):
     return Response(response=json.dumps(resp),
                     status=HTTPStatus.OK)
 
-@app.route('/room', methods=['POST'])
+@app.route('/api/room', methods=['POST'])
 def register_room():
     payload = request.json
     password = payload.get('password')
@@ -72,7 +72,7 @@ def register_room():
     return Response(response=json.dumps(resp),
                     status=HTTPStatus.OK)
 
-@app.route('/sensor', methods=['POST'])
+@app.route('/api/sensor', methods=['POST'])
 def register_sensor():
     payload = request.json
     room_id = payload.get('room_id')
