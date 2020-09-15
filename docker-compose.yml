@@ -33,6 +33,19 @@ services:
 
   sensor:
     build: ./sensor
+    links:
+      - sensor-db
     volumes:
       - ./sensor/:/work
     command: ['python', 'app.py']
+
+  sensor-db:
+    build: ./sensor-db
+    volumes:
+      - sensor-db:/var/lib/mysql
+      - ./sensor-db/db:/docker-entrypoint-initdb.d #初期db
+    environment:
+      - MYSQL_ROOT_PASSWORD=password
+
+volumes:
+  sensor-db:
