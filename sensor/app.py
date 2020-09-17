@@ -18,7 +18,7 @@ class SensorManagerServicer(sensor_manager_pb2_grpc.SensorManagerServicer):
 
     def Register(self, request, context):
         db = dbmanager.SensordbManager(CONFIG_PATH, SECTION)
-        id_, success = db.regist_sensor(request.room_id, request.host)
+        id_, success = db.register_sensor(request.room_id, request.host)
 
         sensors = []
         if success:

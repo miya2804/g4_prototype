@@ -12,7 +12,7 @@ class SensordbManager():
         self.config.read(config_path)
         self.section = section
 
-    def regist_sensor(self, room_id, host):
+    def register_sensor(self, room_id, host):
         try:
             cnx = mysql.connector.connect(
                 host=self.config.get(self.section, 'host'),
