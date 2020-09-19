@@ -76,8 +76,14 @@ def register_room():
 def register_sensor():
     payload = request.json
     room_id = payload.get('room_id')
+    password = payload.get('password')
     host = payload.get('host')
-    if room_id is None or host is None:
+    if any(list(map(lambda x: x is None, [room_id, password, host]))):
+        return Response(response='Bad Request',
+                        status=HTTPStatus.BAD_REQUEST)
+
+    success = room_client.signin(int(room_id), password)
+    if not success:
         return Response(response='Bad Request',
                         status=HTTPStatus.BAD_REQUEST)
 
