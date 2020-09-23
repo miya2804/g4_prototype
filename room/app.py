@@ -1,27 +1,41 @@
-import logging
 import random
+import logging
 from concurrent import futures
 
 import grpc
+from orator import DatabaseManager
 
 from services import room_manager_pb2, room_manager_pb2_grpc
 
+from manager import Manager
 
-DUMMY_ID = 1
-DUMMY_SUCCESS = True
 
+config = {
+    'mysql': {
+        'driver': 'mysql',
+        'host': 'room-db',
+        'database': 'rooms',
+        'user': 'root',
+        'password': 'password',
+        'prefix': '',
+    }
+}
+manager = Manager(config)
 
 class RoomManagerServicer(room_manager_pb2_grpc.RoomManagerServicer):
     def __init__(self, *args, **kwargs):
         super(RoomManagerServicer, self).__init__(*args, **kwargs)
 
     def Register(self, request, context):
-        return room_manager_pb2.Result(id=DUMMY_ID,
-                                       success=DUMMY_SUCCESS)
+        id_, success = manager.register(request.password)
+        return room_manager_pb2.Result(id=id_,
+                                       success=success)
 
     def Signin(self, request, context):
-        return room_manager_pb2.Result(id=DUMMY_ID,
-                                       success=DUMMY_SUCCESS)
+        id_ = request.id
+        success = manager.signin(id_, request.password)
+        return room_manager_pb2.Result(id=id_,
+                                       success=success)
 
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
