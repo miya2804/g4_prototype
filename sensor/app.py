@@ -1,32 +1,45 @@
 import logging
-import random
 from concurrent import futures
 
 import grpc
 
+import dbmanager
 from services import sensor_manager_pb2, sensor_manager_pb2_grpc
 
-N_DUMMY_SENSORS = 2
-DUMMY_ROOM_ID = 1
-DUMMY_HOST = '127.0.0.1:8080'
-DUMMY_SUCCESS = True
+CONFIG_PATH = 'config.ini'
+SECTION = 'sensor-db'
+
+logger = logging.getLogger(__name__)
+
 
 class SensorManagerServicer(sensor_manager_pb2_grpc.SensorManagerServicer):
     def __init__(self, *args, **kwargs):
         super(SensorManagerServicer, self).__init__(*args, **kwargs)
 
     def Register(self, request, context):
-        sensors = [sensor_manager_pb2.Sensor(room_id=DUMMY_ROOM_ID,
-                                             host=DUMMY_HOST)]
+        db = dbmanager.SensordbManager(CONFIG_PATH, SECTION)
+        id_, success = db.register_sensor(request.room_id, request.host)
+
+        sensors = []
+        if success:
+            sensors = [sensor_manager_pb2.Sensor(room_id=id_)]
+
         return sensor_manager_pb2.Result(sensors=sensors,
-                                         success=DUMMY_SUCCESS)
+                                         success=success)
 
     def Get(self, request, context):
-        sensors = [sensor_manager_pb2.Sensor(room_id=DUMMY_ROOM_ID,
-                                             host=DUMMY_HOST)
-                   for _ in range(N_DUMMY_SENSORS)]
+        db = dbmanager.SensordbManager(CONFIG_PATH, SECTION)
+        sensor_list, success = db.get_sensors(request.room_id)
+
+        sensors = []
+        if success:
+            for sensor in sensor_list:
+                sensors.append(sensor_manager_pb2.Sensor
+                               (room_id=sensor[0], host=sensor[1]))
+
         return sensor_manager_pb2.Result(sensors=sensors,
-                                         success=DUMMY_SUCCESS)
+                                         success=success)
+
 
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
@@ -35,6 +48,7 @@ def serve():
     server.add_insecure_port('[::]:50051')
     server.start()
     server.wait_for_termination()
+
 
 if __name__ == '__main__':
     logging.basicConfig()
