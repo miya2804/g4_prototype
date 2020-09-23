@@ -9,6 +9,7 @@ CONFIG_SECTION = 'room-db'
 
 class Manager():
     def __init__(self, db_config):
+        self.db_config = db_config
         db = DatabaseManager(db_config)
         set_connection(db)
 
@@ -30,6 +31,9 @@ class Manager():
         if len(room) == 1:
             return True
         return False
+
+    def get_config(self):
+        return self.db_config
 
     @classmethod
     def from_file(cls, path):
