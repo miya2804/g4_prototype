@@ -1,29 +1,22 @@
 import unittest
+import configparser
 
 from orator import DatabaseManager
 
 from manager import Manager
 
 
-DB_CONFIG = {
-    'mysql': {
-        'driver': 'mysql',
-        'host': 'room-db',
-        'database': 'test_rooms',
-        'user': 'root',
-        'password': 'password',
-        'prefix': '',
-    }
-}
+DB_CONFIG_PATH = './tests/config.ini'
 
 
 class TestManager(unittest.TestCase):
     def __init__(self, *args, **kwargs):
         super(TestManager, self).__init__(*args, **kwargs)
-        self.manager = Manager(DB_CONFIG)
+        self.manager = Manager.from_file(DB_CONFIG_PATH)
 
     def setUp(self):
-        db = DatabaseManager(DB_CONFIG)
+        config = self.manager.get_config()
+        db = DatabaseManager(config)
         db.table('rooms').truncate()
 
     def test_register_at_first(self):
