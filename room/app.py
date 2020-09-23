@@ -13,8 +13,8 @@ from manager import Manager
 config = {
     'mysql': {
         'driver': 'mysql',
-        'host': 'room-db',
-        'database': 'rooms',
+        'host': 'db',
+        'database': 'ventilation',
         'user': 'root',
         'password': 'password',
         'prefix': '',

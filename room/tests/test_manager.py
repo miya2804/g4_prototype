@@ -8,8 +8,8 @@ from manager import Manager
 DB_CONFIG = {
     'mysql': {
         'driver': 'mysql',
-        'host': 'room-db',
-        'database': 'test_rooms',
+        'host': 'db',
+        'database': 'test_ventilation',
         'user': 'root',
         'password': 'password',
         'prefix': '',

@@ -31,31 +31,20 @@ services:
       - ./room/:/work
     command: ['python', '-m', 'app']
     links:
-      - room-db
+      - db
 
   sensor:
     build: ./sensor
     links:
-      - sensor-db
+      - db
     volumes:
       - ./sensor/:/work
     command: ['python', 'app.py']
 
-  room-db:
-    build: ./room-db
+  db:
+    build: ./db
     volumes:
-      - ./room-db/data:/var/lib/mysql
-      - ./room-db/init.d:/docker-entrypoint-initdb.d
+      - ./db/data:/var/lib/mysql
+      - ./db/init.d:/docker-entrypoint-initdb.d
     environment:
       - MYSQL_ROOT_PASSWORD=password
-
-  sensor-db:
-    build: ./sensor-db
-    volumes:
-      - sensor-db:/var/lib/mysql
-      - ./sensor-db/db:/docker-entrypoint-initdb.d #初期db
-    environment:
-      - MYSQL_ROOT_PASSWORD=password
-
-volumes:
-  sensor-db:

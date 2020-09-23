@@ -1,5 +1,4 @@
-CREATE DATABASE rooms;
-USE rooms;
+USE ventilation;
 
 CREATE TABLE rooms (
        id int auto_increment not null,
