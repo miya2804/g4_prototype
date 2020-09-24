@@ -29,7 +29,9 @@ services:
     build: ./room
     volumes:
       - ./room/:/work
-    command: ['python', 'app.py']
+    command: ['python', '-m', 'app']
+    links:
+      - room-db
 
   sensor:
     build: ./sensor
@@ -38,6 +40,14 @@ services:
     volumes:
       - ./sensor/:/work
     command: ['python', 'app.py']
+
+  room-db:
+    build: ./room-db
+    volumes:
+      - ./room-db/data:/var/lib/mysql
+      - ./room-db/init.d:/docker-entrypoint-initdb.d
+    environment:
+      - MYSQL_ROOT_PASSWORD=password
 
   sensor-db:
     build: ./sensor-db
