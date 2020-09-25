@@ -6,6 +6,7 @@ from orator import DatabaseManager
 from manager import Manager
 
 
+
 DB_CONFIG_PATH = './tests/config.ini'
 
 

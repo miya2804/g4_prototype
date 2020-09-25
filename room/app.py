@@ -11,7 +11,6 @@ from manager import Manager
 
 
 DB_CONFIG_PATH = './config.ini'
-
 manager = Manager.from_file(DB_CONFIG_PATH)
 
 class RoomManagerServicer(room_manager_pb2_grpc.RoomManagerServicer):
