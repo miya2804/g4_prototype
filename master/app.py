@@ -1,72 +1,107 @@
 import json
+import configparser
+from http import HTTPStatus
 
-import grpc
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, Response, request, jsonify, send_from_directory
+
 
 from services import rasp_pb2, rasp_pb2_grpc
 from services import room_manager_pb2, room_manager_pb2_grpc
 from services import sensor_manager_pb2, sensor_manager_pb2_grpc
 
-DUMMY_ROOM_ID=1
-DUMMY_PASSWORD='password'
-DUMMY_RASP1_ID=1
-DUMMY_RASP2_ID=2
-DUMMY_HOST='127.0.0.1:8080'
+from clients import RoomClient, SensorClient, RaspClient
+
+CONFIG_PATH = 'config.ini'
+config = configparser.ConfigParser()
+config.read(CONFIG_PATH)
 
 app = Flask(__name__, static_folder='./public')
 
-@app.route('/', methods=['GET'])
-def get_states():
-    with grpc.insecure_channel('room:50051') as channel:
-        stub = room_manager_pb2_grpc.RoomManagerStub(channel)
-        room = room_manager_pb2.Room(id=DUMMY_ROOM_ID,
-                                     password=DUMMY_PASSWORD)
-        _ = stub.Signin(room)
+room_addr = '{}:{}'.format(config.get('room', 'Host'),
+                           config.get('room', 'Port'))
+sensor_addr = '{}:{}'.format(config.get('sensor', 'Host'),
+                             config.get('sensor', 'Port'))
+room_client = RoomClient(room_addr,
+                         timeout=config.getint('room', 'Timeout'))
+sensor_client = SensorClient(sensor_addr,
+                             timeout=config.getint('sensor', 'Timeout'))
 
-    with grpc.insecure_channel('sensor:50051') as channel:
-        stub = sensor_manager_pb2_grpc.SensorManagerStub(channel)
-        sensor = sensor_manager_pb2.Sensor(room_id=DUMMY_ROOM_ID)
-        _ = stub.Get(sensor)
+@app.route('/api/room/<room_id>', methods=['GET'])
+def get_states(room_id):
+    password = request.args.get('password')
+    if password is None:
+        return Response(response='Bad Request',
+                        status=HTTPStatus.BAD_REQUEST)
+
+    success = room_client.signin(int(room_id), password)
+    if not success:
+        return Response(response='Bad Request',
+                        status=HTTPStatus.BAD_REQUEST)
+
+    sensors, success = sensor_client.get(int(room_id))
+    if not success:
+        return Response(response='Internal Server Error',
+                        status=HTTPStatus.INTERNAL_SERVER_ERROR)
 
     resp = {}
-    with grpc.insecure_channel('rasp1:50051') as channel:
-        stub = rasp_pb2_grpc.RaspStub(channel)
-        empty = rasp_pb2.Empty()
-        state = stub.GetState(empty)
-        resp[DUMMY_RASP1_ID] = {'state': {'opened': state.opened}}
+    # FIX センサーのデータにIDが存在しないため,一旦インデックスで代用
+    # messageが修正されたらIDに修正
+    for idx, sensor in enumerate(sensors):
+        addr = '{}:{}'.format(sensor.host, config.get('sensor', 'Port'))
+        opened = RaspClient.get_state_with_address(addr,
+                                                   timeout=config.getint('sensor', 'Timeout'))
+        resp[idx] = {'state': {'opened': opened}}
 
-    with grpc.insecure_channel('rasp2:50051') as channel:
-        stub = rasp_pb2_grpc.RaspStub(channel)
-        empty = rasp_pb2.Empty()
-        state = stub.GetState(empty)
-        resp[DUMMY_RASP2_ID] = {'state': {'opened': state.opened}}
+    return Response(response=json.dumps(resp),
+                    status=HTTPStatus.OK)
 
-    return jsonify(resp)
-
-@app.route('/room', methods=['POST'])
+@app.route('/api/room', methods=['POST'])
 def register_room():
-    with grpc.insecure_channel('room:50051') as channel:
-        stub = room_manager_pb2_grpc.RoomManagerStub(channel)
-        room = room_manager_pb2.Room(password=DUMMY_PASSWORD)
-        result = stub.Register(room)
+    payload = request.json
+    password = payload.get('password')
+    if password is None:
+        return Response(response='Bad Request',
+                        status=HTTPStatus.BAD_REQUEST)
 
-    resp = {'id': result.id, 'success': result.success}
-    return jsonify(resp)
+    id_, success = room_client.register(password)
+    if not success:
+        return Response(response='Internal Server Error',
+                        status=HTTPStatus.INTERNAL_SERVER_ERROR)
 
-@app.route('/sensor', methods=['POST'])
+    resp = {'id': id_, 'success': success}
+
+    return Response(response=json.dumps(resp),
+                    status=HTTPStatus.OK)
+
+@app.route('/api/sensor', methods=['POST'])
 def register_sensor():
-    with grpc.insecure_channel('sensor:50051') as channel:
-        stub = sensor_manager_pb2_grpc.SensorManagerStub(channel)
-        sensor = sensor_manager_pb2.Sensor(room_id=DUMMY_ROOM_ID,
-                                           host=DUMMY_HOST)
-        result = stub.Register(sensor)
+    payload = request.json
+    room_id = payload.get('room_id')
+    password = payload.get('password')
+    host = payload.get('host')
+    if any(list(map(lambda x: x is None, [room_id, password, host]))):
+        return Response(response='Bad Request',
+                        status=HTTPStatus.BAD_REQUEST)
 
-    resp = {'id': result.sensors[0].room_id, 'success': result.success}
-    return jsonify(resp)
+    success = room_client.signin(int(room_id), password)
+    if not success:
+        return Response(response='Bad Request',
+                        status=HTTPStatus.BAD_REQUEST)
+
+    id_, success = sensor_client.register(room_id, host)
+    if not success:
+        return Response(response='Internal Server Error',
+                        status=HTTPStatus.INTERNAL_SERVER_ERROR)
+
+    resp = {'id': id_, 'success': success}
+
+    return Response(response=json.dumps(resp),
+                    status=HTTPStatus.OK)
 
 @app.route('/', methods=['GET'])
 def root():
     return send_from_directory('public', 'index.html')
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8080)
+    app.run(host=config.get('master', 'Host'),
+            port=config.getint('master', 'Port'))
