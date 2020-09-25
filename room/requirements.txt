@@ -2,7 +2,8 @@ backpack==0.1
 blinker==1.4
 cleo==0.6.8
 Faker==0.8.18
-grpcio==1.30.0
+grpcio==1.32.0
+grpcio-testing==1.32.0
 grpcio-tools==1.30.0
 inflection==0.3.1
 lazy-object-proxy==1.5.1
