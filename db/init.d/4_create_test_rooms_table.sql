@@ -1,5 +1,4 @@
-CREATE DATABASE test_rooms;
-USE test_rooms;
+USE test_ventilation;
 
 CREATE TABLE rooms (
        id int auto_increment not null,

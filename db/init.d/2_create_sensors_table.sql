@@ -1,5 +1,4 @@
-CREATE DATABASE sensors;
-USE sensors;
+USE ventilation;
 
 CREATE TABLE sensors (
        id int auto_increment not null,

@@ -10,17 +10,8 @@ from services import room_manager_pb2, room_manager_pb2_grpc
 from manager import Manager
 
 
-config = {
-    'mysql': {
-        'driver': 'mysql',
-        'host': 'room-db',
-        'database': 'rooms',
-        'user': 'root',
-        'password': 'password',
-        'prefix': '',
-    }
-}
-manager = Manager(config)
+DB_CONFIG_PATH = './config.ini'
+manager = Manager.from_file(DB_CONFIG_PATH)
 
 class RoomManagerServicer(room_manager_pb2_grpc.RoomManagerServicer):
     def __init__(self, *args, **kwargs):
