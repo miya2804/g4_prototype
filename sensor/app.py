@@ -35,7 +35,9 @@ class SensorManagerServicer(sensor_manager_pb2_grpc.SensorManagerServicer):
         if success:
             for sensor in sensor_list:
                 sensors.append(sensor_manager_pb2.Sensor
-                               (room_id=sensor[0], host=sensor[1]))
+                               (id=sensor[0],
+                                room_id=sensor[1],
+                                host=sensor[2]))
 
         return sensor_manager_pb2.Result(sensors=sensors,
                                          success=success)

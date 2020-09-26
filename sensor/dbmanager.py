@@ -11,11 +11,11 @@ class SensordbManager():
         self.config = configparser.ConfigParser()
         self.config.read(config_path)
         self.section = section
-        
+
         table = self.config.get(section, 'table')
         self.insert_sensor = ('insert into {} '
                               'values (null, %s, %s)').format(table)
-        self.select_sensor = ('select room_id, host from {} '
+        self.select_sensor = ('select id, room_id, host from {} '
                               'where room_id= %s').format(table)
 
     def register_sensor(self, room_id, host):
