@@ -43,13 +43,11 @@ def get_states(room_id):
                         status=HTTPStatus.INTERNAL_SERVER_ERROR)
 
     resp = {}
-    # FIX センサーのデータにIDが存在しないため,一旦インデックスで代用
-    # messageが修正されたらIDに修正
-    for idx, sensor in enumerate(sensors):
+    for sensor in sensors:
         addr = '{}:{}'.format(sensor.host, config.get('sensor', 'Port'))
         opened = RaspClient.get_state_with_address(addr,
                                                    timeout=config.getint('sensor', 'Timeout'))
-        resp[idx] = {'state': {'opened': opened}}
+        resp[sensor.id] = {'state': {'opened': opened}}
 
     return Response(response=json.dumps(resp),
                     status=HTTPStatus.OK)
