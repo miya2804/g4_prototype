@@ -10,46 +10,27 @@ from flask import Flask, Response, request
 
 from services import rasp_pb2, rasp_pb2_grpc
 
-
-class Rasp():
-    def __init__(self):
-        self.opened = True
-
-    def get_state(self):
-        pass
-
-    def set_state(self, opened):
-        pass
+STATE=True
 
 
-class VirtualRasp(Rasp):
-    def get_state(self):
-        return self.opened
+class RaspServicer(rasp_pb2_grpc.RaspServicer):
+    def GetState(self, request, context):
+        opened=STATE
+        return rasp_pb2.State(opened=opened)
 
-    def set_state(self, opened):
-        self.opened = opened
-
-
-def get_rasp_servicer(rasp):
-    class RaspServicer():
-        def GetState(self, request, context):
-            opened = rasp.get_state()
-            return rasp_pb2.State(opened=opened)
-    
-    return RaspServicer()
-
-
-def serve_as_grpc(servicer):
+def serve_as_grpc():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    rasp_pb2_grpc.add_RaspServicer_to_server(servicer, server)
+    rasp_pb2_grpc.add_RaspServicer_to_server(RaspServicer(), server)
     server.add_insecure_port('[::]:50051')
     server.start()
     server.wait_for_termination()
 
-def register_route(app, rasp):
+def serve():
+    app = Flask(__name__)
+
     @app.route('/', methods=['GET'])
     def get():
-        opened = rasp.get_state()
+        opened = STATE
 
         resp = {'opened': opened}
         return Response(response=json.dumps(resp),
@@ -62,19 +43,17 @@ def register_route(app, rasp):
         if open_ is None:
             return Response(response='Bad Request',
                             status=HTTPStatus.BAD_REQUEST)
-        rasp.set_state(open_)
+        STATE = open_
+
+        if STATE:
+            opened = True
+        else:
+            opened = False
 
         resp = {'success': True,
-                'opened': open_}
+                'opened': opened}
         return Response(response=json.dumps(resp),
                         status=HTTPStatus.OK)
-
-    return app
-
-def serve(rasp):
-    app = Flask(__name__)
-
-    register_route(app, rasp)
 
     app.run('0.0.0.0', port=3000)
 
@@ -88,10 +67,7 @@ if __name__ == '__main__':
     args = parse_args()
     logging.basicConfig()
 
-    rasp = VirtualRasp()
-
     if args.grpc:
-        servicer = get_rasp_servicer(rasp)
-        serve_as_grpc(servicer)
+        serve_as_grpc()
     else:
-        serve(rasp)
+        serve()
