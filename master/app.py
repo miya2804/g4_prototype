@@ -1,7 +1,9 @@
 import json
+import argparse
 import configparser
 from http import HTTPStatus
 
+import requests
 from flask import Flask, request, jsonify, Response
 
 from services import rasp_pb2, rasp_pb2_grpc
@@ -13,6 +15,10 @@ from clients import RoomClient, SensorClient, RaspClient
 CONFIG_PATH = 'config.ini'
 config = configparser.ConfigParser()
 config.read(CONFIG_PATH)
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--rasp-grpc', action='store_true')
+args = parser.parse_args()
 
 app = Flask(__name__)
 
@@ -47,8 +53,13 @@ def get_states(room_id):
     # messageが修正されたらIDに修正
     for idx, sensor in enumerate(sensors):
         addr = '{}:{}'.format(sensor.host, config.get('sensor', 'Port'))
-        opened = RaspClient.get_state_with_address(addr,
-                                                   timeout=config.getint('sensor', 'Timeout'))
+        if args.rasp_grpc:
+            opened = RaspClient.get_state_with_address(addr,
+                                                       timeout=config.getint('sensor', 'Timeout'))
+        else:
+            uri = 'http://{}:{}'.format(sensor.host, 3000)
+            opened = requests.get(uri).json()['opened']
+
         resp[idx] = {'state': {'opened': opened}}
 
     return Response(response=json.dumps(resp),
