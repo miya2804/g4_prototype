@@ -9,11 +9,11 @@ import grpc
 from flask import Flask, Response, request
 
 from services import rasp_pb2, rasp_pb2_grpc
-from raspberrypi import Rasp, VirtualRasp
+from raspberrypi import VirtualRasp
 
 
 def get_rasp_servicer(rasp):
-    class RaspServicer():
+    class RaspServicer(rasp_pb2_grpc.RaspServicer):
         def GetState(self, request, context):
             opened = rasp.get_state()
             return rasp_pb2.State(opened=opened)
@@ -21,14 +21,17 @@ def get_rasp_servicer(rasp):
     return RaspServicer()
 
 
-def serve_as_grpc(servicer):
+def serve_as_grpc(rasp):
+    servicer = get_rasp_servicer(rasp)
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     rasp_pb2_grpc.add_RaspServicer_to_server(servicer, server)
     server.add_insecure_port('[::]:50051')
     server.start()
     server.wait_for_termination()
 
-def register_route(app, rasp):
+def serve(rasp):
+    app = Flask(__name__)
+
     @app.route('/', methods=['GET'])
     def get():
         opened = rasp.get_state()
@@ -51,13 +54,6 @@ def register_route(app, rasp):
         return Response(response=json.dumps(resp),
                         status=HTTPStatus.OK)
 
-    return app
-
-def serve(rasp):
-    app = Flask(__name__)
-
-    register_route(app, rasp)
-
     app.run('0.0.0.0', port=3000)
 
 
@@ -73,7 +69,6 @@ if __name__ == '__main__':
     rasp = VirtualRasp()
 
     if args.grpc:
-        servicer = get_rasp_servicer(rasp)
-        serve_as_grpc(servicer)
+        serve_as_grpc(rasp)
     else:
         serve(rasp)
