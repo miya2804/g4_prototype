@@ -30,7 +30,7 @@ export default {
             }
 
             axios
-                .post('/room', requestBody)
+                .post('/api/sensor', requestBody)
                 .then(response => {
                     if (response.status=200) {
                         this.clearInputs();

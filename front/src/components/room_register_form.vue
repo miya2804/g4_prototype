@@ -1,6 +1,6 @@
 <template>
 <div>
-  <input v-model="password" placeholder="Room ID">
+  <input v-model="password" placeholder="Password">
   <button v-on:click="send">
     send
   </button>
@@ -26,7 +26,7 @@ export default {
             }
 
             axios
-                .post('/sensor', requestBody)
+                .post('/api/room', requestBody)
                 .then(response => {
                     if (response.status=200) {
                         this.clearInputs();
