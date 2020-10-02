@@ -48,3 +48,8 @@ services:
       - ./db/init.d:/docker-entrypoint-initdb.d
     environment:
       - MYSQL_ROOT_PASSWORD=password
+
+  discord-mock-agent:
+    build: ./agents/discord/mock
+    volumes:
+      - ./agents/discord/mock:/opt/app
