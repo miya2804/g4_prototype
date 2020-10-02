@@ -8,43 +8,29 @@ services:
       - ./master/:/work
     command: ['python', 'app.py']
     links:
-      - vrasp1
-      - vrasp2
-      - vrasp3
-      - vrasp4
-      - vrasp5
+      - rasp1
+      - rasp2
+      - vrasps
       - room
       - sensor
 
-  vrasp1:
+  rasp1:
     build: ./rasp
     volumes:
       - ./rasp/:/work
     command: ['python', 'app.py']
 
-  vrasp2:
+  rasp2:
     build: ./rasp
     volumes:
       - ./rasp:/work
     command: ['python', 'app.py']
 
-  vrasp3:
+  vrasps:
     build: ./rasp
     volumes:
       - ./rasp:/work
-    command: ['python', 'app.py']
-
-  vrasp4:
-    build: ./rasp
-    volumes:
-      - ./rasp:/work
-    command: ['python', 'app.py']
-
-  vrasp5:
-    build: ./rasp
-    volumes:
-      - ./rasp:/work
-    command: ['python', 'app.py']
+    command: ['python', 'vapp.py']
 
   room:
     build: ./room

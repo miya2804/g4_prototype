@@ -9,25 +9,7 @@ import grpc
 from flask import Flask, Response, request
 
 from services import rasp_pb2, rasp_pb2_grpc
-
-
-class Rasp():
-    def __init__(self):
-        self.opened = True
-
-    def get_state(self):
-        pass
-
-    def set_state(self, opened):
-        pass
-
-
-class VirtualRasp(Rasp):
-    def get_state(self):
-        return self.opened
-
-    def set_state(self, opened):
-        self.opened = opened
+from raspberrypi import Rasp, VirtualRasp
 
 
 def get_rasp_servicer(rasp):
