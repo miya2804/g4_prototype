@@ -30,6 +30,8 @@ services:
     build: ./rasp
     volumes:
       - ./rasp:/work
+    ports:
+      - 8888:8888
     command: ['python', 'vapp.py']
 
   room:

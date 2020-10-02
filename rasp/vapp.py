@@ -33,22 +33,22 @@ class VirtualRasps():
 
 
 def register_route(app, vrasps):
-    @app.route('/<sensor_id>', methods=['GET'])
-    def get(sensor_id):
+    @app.route('/api/rasp/<rasp_id>', methods=['GET'])
+    def get(rasp_id):
         try:
-            opened = vrasps.get_state_by_id(sensor_id)
-            resp = Response(response=json.dumps({'opened': opened}),
-                            status=HTTPStatus.OK)
+            opened = vrasps.get_state_by_id(rasp_id)
+            response = Response(response=json.dumps({'opened': opened}),
+                                status=HTTPStatus.OK)
 
         except KeyError:
-            resp = Response(response='Bad Request',
-                          status=HTTPStatus.BAD_REQUEST)
+            response = Response(response='Bad Request',
+                                status=HTTPStatus.BAD_REQUEST)
 
-        return resp
+        return response
 
 
-    @app.route('/<sensor_id>', methods=['POST'])
-    def set(sensor_id):
+    @app.route('/api/rasp/<rasp_id>', methods=['POST'])
+    def set(rasp_id):
         payload = request.json
         open_ = payload.get('open')
         if open_ is None:
@@ -56,32 +56,32 @@ def register_route(app, vrasps):
                             status=HTTPStatus.BAD_REQUEST)
 
         try:
-            vrasps.set_state_by_id(sensor_id, open_)
-            resp = Response(response=json.dumps({'success': True,
-                                                 'opened': open_}),
-                            status=HTTPStatus.OK)
+            vrasps.set_state_by_id(rasp_id, open_)
+            response = Response(response=json.dumps({'success': True,
+                                                     'opened': open_}),
+                                status=HTTPStatus.OK)
 
         except KeyError:
-            resp = Response(response=json.dumps({'success': True,
-                                                 'opened': None}),
-                            status=HTTPStatus.BAD_REQUEST)
+            response = Response(response=json.dumps({'success': True,
+                                                     'opened': None}),
+                                status=HTTPStatus.BAD_REQUEST)
 
         except Exception:
-            resp = Response(response=json.dumps({'success': True,
-                                                 'opened': None}),
-                            status=HTTPStatus.INTERNAL_SERVER_ERROR)
+            response = Response(response=json.dumps({'success': True,
+                                                     'opened': None}),
+                                status=HTTPStatus.INTERNAL_SERVER_ERROR)
 
-        return resp
+        return response
 
 
-    @app.route('/', methods=['POST'])
+    @app.route('/api/rasp', methods=['POST'])
     def new():
         vrasp = VirtualRasp()
         id_ = vrasps.register(vrasp)
-        resp = Response(response=json.dumps({'success': True,
-                                             'id': id_}),
-                        status=HTTPStatus.OK)
-        return resp
+        response = Response(response=json.dumps({'success': True,
+                                                 'id': id_}),
+                            status=HTTPStatus.OK)
+        return response
 
 
     return app
