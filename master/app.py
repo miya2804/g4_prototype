@@ -4,7 +4,7 @@ import configparser
 from http import HTTPStatus
 
 import requests
-from flask import Flask, request, jsonify, Response
+from flask import Flask, Response, request, jsonify, send_from_directory
 
 from services import rasp_pb2, rasp_pb2_grpc
 from services import room_manager_pb2, room_manager_pb2_grpc
@@ -20,7 +20,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--rasp-grpc', action='store_true')
 args = parser.parse_args()
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='./public')
 
 room_addr = '{}:{}'.format(config.get('room', 'Host'),
                            config.get('room', 'Port'))
@@ -49,16 +49,14 @@ def get_states(room_id):
                         status=HTTPStatus.INTERNAL_SERVER_ERROR)
 
     resp = {}
-    # FIX センサーのデータにIDが存在しないため,一旦インデックスで代用
-    # messageが修正されたらIDに修正
-    for idx, sensor in enumerate(sensors):
+    for sensor in sensors:
         host = sensor.host
         port = config.get('sensor', 'Port')
 
         opened = RaspClient.get_state_with_host_and_port(host, port,
                                                          timeout=config.getint('sensor', 'Timeout'),
                                                          grpc=args.rasp_grpc)
-        resp[idx] = {'state': {'opened': opened}}
+        resp[sensor.id] = {'state': {'opened': opened}}
 
     return Response(response=json.dumps(resp),
                     status=HTTPStatus.OK)
@@ -105,6 +103,10 @@ def register_sensor():
 
     return Response(response=json.dumps(resp),
                     status=HTTPStatus.OK)
+
+@app.route('/', methods=['GET'])
+def root():
+    return send_from_directory('public', 'index.html')
 
 if __name__ == '__main__':
     app.run(host=config.get('master', 'Host'),

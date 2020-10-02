@@ -48,7 +48,10 @@ class SensorClient(ClientBase):
                                                host=host)
             result = stub.Register(sensor, timeout=self.timeout)
 
-        return result.sensors[0].room_id, result.success
+        if result.success:
+            return result.sensors[0].room_id, result.success
+        else:
+            return None, result.success
 
 
 class RaspClient(ClientBase):
