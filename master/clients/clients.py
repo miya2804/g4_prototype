@@ -1,3 +1,5 @@
+import re
+
 import grpc
 import requests
 
@@ -77,8 +79,20 @@ class RaspClient(ClientBase):
     @classmethod
     def get_state_with_host_and_port(cls, host, port,
                                      timeout=None, grpc=True):
+        vrasp_prog = re.compile('^vrasp[\d]+$')
+        vrasp_id_prog = re.compile('[\d]+$')
+        vrasps_host = 'vrasps'
+        vrasps_port = 8888
+        vrasps_addr_template = 'http://{}:{}/api/rasp/{}'
+
         if grpc:
             addr = '{}:{}'.format(host, port)
+
+        elif vrasp_prog.match(host) is not None:
+            vrasp_id = vrasp_id_prog.search(host)[0]
+            addr = vrasps_addr_template.format(vrasps_host,
+                                               vrasps_port,
+                                               vrasp_id)
 
         else:
             addr = 'http://{}:{}'.format(host, 3000)
