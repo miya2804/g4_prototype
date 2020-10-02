@@ -1,4 +1,5 @@
 import grpc
+import requests
 
 from services import rasp_pb2, rasp_pb2_grpc
 from services import room_manager_pb2, room_manager_pb2_grpc
@@ -6,9 +7,10 @@ from services import sensor_manager_pb2, sensor_manager_pb2_grpc
 
 
 class ClientBase():
-    def __init__(self, addr, timeout=None):
+    def __init__(self, addr, timeout=None, grpc=True):
         self.addr = addr
         self.timeout= timeout
+        self.grpc = grpc
 
 
 class RoomClient(ClientBase):
@@ -46,22 +48,40 @@ class SensorClient(ClientBase):
                                                host=host)
             result = stub.Register(sensor, timeout=self.timeout)
 
-        return result.sensors[0].room_id, result.success
+        if result.success:
+            return result.sensors[0].room_id, result.success
+        else:
+            return None, result.success
 
 
 class RaspClient(ClientBase):
     def get_state(self):
-        with grpc.insecure_channel(self.addr) as channel:
-            stub = rasp_pb2_grpc.RaspStub(channel)
-            empty = rasp_pb2.Empty()
+        if self.grpc:
+            with grpc.insecure_channel(self.addr) as channel:
+                stub = rasp_pb2_grpc.RaspStub(channel)
+                empty = rasp_pb2.Empty()
+                try:
+                    state = stub.GetState(empty, timeout=self.timeout)
+                except:
+                    return None
+
+            return state.opened
+
+        else:
             try:
-                state = stub.GetState(empty, timeout=self.timeout)
+                return requests.get(self.addr).json()['opened']
             except:
                 return None
 
-        return state.opened
 
     @classmethod
-    def get_state_with_address(cls, *args, **kwargs):
-        client = cls(*args, **kwargs)
+    def get_state_with_host_and_port(cls, host, port,
+                                     timeout=None, grpc=True):
+        if grpc:
+            addr = '{}:{}'.format(host, port)
+
+        else:
+            addr = 'http://{}:{}'.format(host, 3000)
+
+        client = cls(addr, timeout, grpc)
         return client.get_state()
