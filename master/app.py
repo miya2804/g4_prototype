@@ -52,14 +52,12 @@ def get_states(room_id):
     # FIX センサーのデータにIDが存在しないため,一旦インデックスで代用
     # messageが修正されたらIDに修正
     for idx, sensor in enumerate(sensors):
-        addr = '{}:{}'.format(sensor.host, config.get('sensor', 'Port'))
-        if args.rasp_grpc:
-            opened = RaspClient.get_state_with_address(addr,
-                                                       timeout=config.getint('sensor', 'Timeout'))
-        else:
-            uri = 'http://{}:{}'.format(sensor.host, 3000)
-            opened = requests.get(uri).json()['opened']
+        host = sensor.host
+        port = config.get('sensor', 'Port')
 
+        opened = RaspClient.get_state_with_host_and_port(host, port,
+                                                         timeout=config.getint('sensor', 'Timeout'),
+                                                         grpc=args.rasp_grpc)
         resp[idx] = {'state': {'opened': opened}}
 
     return Response(response=json.dumps(resp),
