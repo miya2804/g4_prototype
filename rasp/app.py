@@ -23,8 +23,9 @@ def get_rasp_servicer(rasp):
 
 def serve_as_grpc(rasp):
     servicer = get_rasp_servicer(rasp)
+
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    rasp_pb2_grpc.add_RaspServicer_to_server(servicer, server)
+    rasp_pb2_grpc.add_RaspServicer_to_server(RaspServicer(), server)
     server.add_insecure_port('[::]:50051')
     server.start()
     server.wait_for_termination()
@@ -34,7 +35,7 @@ def serve(rasp):
 
     @app.route('/', methods=['GET'])
     def get():
-        opened = rasp.get_state()
+        opened = STATE
 
         resp = {'opened': opened}
         return Response(response=json.dumps(resp),
@@ -47,10 +48,15 @@ def serve(rasp):
         if open_ is None:
             return Response(response='Bad Request',
                             status=HTTPStatus.BAD_REQUEST)
-        rasp.set_state(open_)
+        STATE = open_
+
+        if STATE:
+            opened = True
+        else:
+            opened = False
 
         resp = {'success': True,
-                'opened': open_}
+                'opened': opened}
         return Response(response=json.dumps(resp),
                         status=HTTPStatus.OK)
 
@@ -71,4 +77,4 @@ if __name__ == '__main__':
     if args.grpc:
         serve_as_grpc(rasp)
     else:
-        serve(rasp)
+        serve()

@@ -94,7 +94,7 @@ def register_sensor():
         return Response(response='Bad Request',
                         status=HTTPStatus.BAD_REQUEST)
 
-    id_, success = sensor_client.register(room_id, host)
+    id_, success = sensor_client.register(int(room_id), host)
     if not success:
         return Response(response='Internal Server Error',
                         status=HTTPStatus.INTERNAL_SERVER_ERROR)
