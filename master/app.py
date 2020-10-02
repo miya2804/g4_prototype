@@ -2,7 +2,8 @@ import json
 import configparser
 from http import HTTPStatus
 
-from flask import Flask, request, jsonify, Response
+from flask import Flask, Response, request, jsonify, send_from_directory
+
 
 from services import rasp_pb2, rasp_pb2_grpc
 from services import room_manager_pb2, room_manager_pb2_grpc
@@ -14,7 +15,7 @@ CONFIG_PATH = 'config.ini'
 config = configparser.ConfigParser()
 config.read(CONFIG_PATH)
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='./public')
 
 room_addr = '{}:{}'.format(config.get('room', 'Host'),
                            config.get('room', 'Port'))
@@ -96,6 +97,10 @@ def register_sensor():
 
     return Response(response=json.dumps(resp),
                     status=HTTPStatus.OK)
+
+@app.route('/', methods=['GET'])
+def root():
+    return send_from_directory('public', 'index.html')
 
 if __name__ == '__main__':
     app.run(host=config.get('master', 'Host'),
