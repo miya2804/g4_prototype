@@ -4,7 +4,8 @@ import configparser
 from http import HTTPStatus
 
 import requests
-from flask import Flask, Response, request, jsonify, send_from_directory
+from flask import (Flask, Response, request, jsonify,
+                   send_from_directory, redirect)
 
 from services import rasp_pb2, rasp_pb2_grpc
 from services import room_manager_pb2, room_manager_pb2_grpc
@@ -102,6 +103,37 @@ def register_sensor():
     resp = {'id': id_, 'success': success}
 
     return Response(response=json.dumps(resp),
+                    status=HTTPStatus.OK)
+
+@app.route('/api/rasp', methods=['GET'])
+def get_all():
+    body = requests.get('http://vrasps:8888/api/rasp').json()
+    return Response(response=json.dumps(body),
+                    status=HTTPStatus.OK)
+
+@app.route('/api/rasp/<rasp_id>', methods=['GET'])
+def get(rasp_id):
+    body = requests.get('http://vrasps:8888/api/rasp/{}'\
+                        .format(rasp_id)).json()
+    return Response(response=json.dumps(body),
+                    status=HTTPStatus.OK)
+
+@app.route('/api/rasp/<rasp_id>', methods=['POST'])
+def set(rasp_id):
+    payload = request.json
+    data = {'open': bool(payload.get('open'))}
+    headers = {'content-type': 'application/json'}
+    body = requests.post('http://vrasps:8888/api/rasp/{}'\
+                         .format(rasp_id),
+                         data=json.dumps(data),
+                         headers=headers).json()
+    return Response(response=json.dumps(body),
+                    status=HTTPStatus.OK)
+
+@app.route('/api/rasp', methods=['POST'])
+def new():
+    body = requests.post('http://vrasps:8888/api/rasp').json()
+    return Response(response=json.dumps(body),
                     status=HTTPStatus.OK)
 
 @app.route('/', methods=['GET'])
