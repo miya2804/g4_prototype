@@ -12,9 +12,6 @@ class VirtualRasps():
         self.current_id = 0
         self.vrasps_map = dict()
 
-    def get(self):
-        return self.vrasps_map
-
     def get_by_id(self, id_):
         return self.vrasps_map[id_]
 
@@ -25,6 +22,9 @@ class VirtualRasps():
         
         return id_
 
+    def get_ids(self):
+        return self.vrasps_map.keys()
+
     def get_state_by_id(self, id_):
         return self.vrasps_map[id_].get_state()
 
@@ -33,6 +33,18 @@ class VirtualRasps():
 
 
 def register_route(app, vrasps):
+    @app.route('/api/rasp', methods=['GET'])
+    def get_all():
+        response_body = dict()
+        for id_ in vrasps.get_ids():
+            response_body[id_] = {
+                'opened': vrasps.get_state_by_id(id_)
+            }
+
+        return Response(response=json.dumps(response_body),
+                        status=HTTPStatus.OK)
+
+
     @app.route('/api/rasp/<rasp_id>', methods=['GET'])
     def get(rasp_id):
         try:
