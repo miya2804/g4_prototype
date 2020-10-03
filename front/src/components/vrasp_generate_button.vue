@@ -1,19 +1,13 @@
 <template>
-<button v-on:click="generateRasp()">Generate!</button>
+<button v-on:click="generateVRasp()">Generate!</button>
 </template>
 
 <script>
-import axios from 'axios';
+import { mapActions } from 'vuex';
 
 export default {
-    methods: {
-        generateRasp: function() {
-            axios
-            .post('/api/rasp')
-            .then(response => {
-                console.log('generate success');
-            });
-        }
-    },
+    methods: mapActions([
+        'generateVRasp',
+    ]),
 }
 </script>

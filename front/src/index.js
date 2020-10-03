@@ -5,6 +5,8 @@ import App from './components/App.vue';
 import MasterPage from './components/master.vue';
 import VRaspPage from './components/vrasp.vue';
 
+import store from './store';
+
 
 Vue.use(VueRouter);
 
@@ -22,5 +24,6 @@ new Vue({
     router,
     components: { App },
     el: '#app',
+    store,
     template: '<App/>',
 });
