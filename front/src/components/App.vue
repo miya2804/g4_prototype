@@ -1,18 +1,9 @@
 <template>
-  <div>
-    <room-register-form/>
-    <sensor-register-form/>
-  </div>
+<div>
+  <router-view></router-view>
+</div>
 </template>
 
 <script>
-import RoomRegisterForm from './room_register_form.vue'
-import SensorRegisterForm from './sensor_register_form.vue'
-
-export default {
-    components: {
-        RoomRegisterForm,
-        SensorRegisterForm,
-    },
-}
+export default {}
 </script>

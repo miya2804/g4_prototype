@@ -28,7 +28,7 @@ export default {
             axios
                 .post('/api/room', requestBody)
                 .then(response => {
-                    if (response.status=200) {
+                    if (response.status == 200) {
                         this.clearInputs();
                         this.setRoomId(response.data.id);
                     }

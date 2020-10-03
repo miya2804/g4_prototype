@@ -11,6 +11,7 @@ services:
     links:
       - rasp1
       - rasp2
+      - vrasps
       - room
       - sensor
 
@@ -25,6 +26,14 @@ services:
     volumes:
       - ./rasp:/work
     command: ['python', 'app.py']
+
+  vrasps:
+    build: ./rasp
+    volumes:
+      - ./rasp:/work
+    ports:
+      - 8888:8888
+    command: ['python', 'vapp.py']
 
   room:
     build: ./room

@@ -11,6 +11,7 @@
   "license": "ISC",
   "devDependencies": {
     "@babel/core": "^7.11.1",
+    "@babel/polyfill": "^7.11.5",
     "@babel/preset-env": "^7.11.0",
     "axios": "^0.19.2",
     "babel-loader": "^8.1.0",
@@ -24,7 +25,9 @@
   },
   "dependencies": {
     "lodash": "^4.17.19",
-    "node-fetch": "^2.6.0"
+    "node-fetch": "^2.6.0",
+    "vue-router": "^3.4.5",
+    "vuex": "^3.5.1"
   },
   "main": "index.js",
   "description": ""
