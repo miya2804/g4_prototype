@@ -77,4 +77,4 @@ if __name__ == '__main__':
     if args.grpc:
         serve_as_grpc(rasp)
     else:
-        serve()
+        serve(rasp)
