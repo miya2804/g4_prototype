@@ -105,6 +105,17 @@ def register_sensor():
     return Response(response=json.dumps(resp),
                     status=HTTPStatus.OK)
 
+@app.route('/api/rasp', methods=['POST'])
+def set_rasp_state():
+    payload = request.json
+    data = {'open': bool(payload.get('open'))}
+    headers = {'content-type': 'application/json'}
+    body = requests.post('http://rasp:3000',
+                         data=json.dumps(data),
+                         headers=headers).json()
+    return Response(response=json.dumps(body),
+                    status=HTTPStatus.OK)
+
 @app.route('/api/vrasp', methods=['GET'])
 def get_all():
     body = requests.get('http://vrasps:8888/api/rasp').json()
