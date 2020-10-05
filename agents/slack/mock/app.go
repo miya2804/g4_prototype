@@ -12,25 +12,53 @@ import (
 	"net/http"
 	"os/signal"
 	"encoding/json"
+	"gopkg.in/ini.v1"
 )
 
 const (
-	URI = ""
-	DATA_CONTENT_TYPE = "application/json"
 	INTERVAL = time.Duration(10 * time.Second)
-	room_id = ""
-	password = ""
-	request_url = "http://master:8080/api/room/" + room_id + "?password=" + password
 )
 
+type Config struct {
+	Url string
+	Data_content_type string
+	Room_id string
+	Password string
+	Api_url string
+	Request_url string
+}
 
 type Data struct {
 	Text string `json:"text"`
 }
 
+type Rasps map[int]Rasp
+
+type Rasp struct {
+	State States `json:"state"`
+}
+
+type States struct {
+	 Opened bool `json:"opened"`
+}
+
 func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	wg := &sync.WaitGroup{}
+
+	var Cnf Config
+	c, err := ini.Load("config.ini")
+	if err != nil {
+		panic(err)
+	}
+	Cnf = Config {
+		Url : c.Section("webhook").Key("url").String(),
+		Data_content_type : c.Section("data").Key("data_content_type").String(),
+		Room_id : c.Section("room").Key("room_id").String(),
+		Password : c.Section("room").Key("password").String(),
+		Api_url : c.Section("api").Key("url").String(),
+	}
+	Cnf.Request_url = Cnf.Api_url + Cnf.Room_id + "?password=" + Cnf.Password
 
 	go func () {
 		wg.Add(1)
@@ -43,19 +71,21 @@ func main() {
 			case <-ctx.Done():
 				break Loop
 			case <-ticker.C:
-				rst, err := http.Get(request_url)
+				rst, err := http.Get(Cnf.Request_url)
 				if err != nil {
-					panic(err)
+					log.Println(err)
+					continue
 				}
 
 				defer rst.Body.Close()
  
 				body, err := ioutil.ReadAll(rst.Body)
 				if err != nil {
-					panic(err)
+					log.Println(err)
+					continue
 				}
 
-				var states map[int]map[string]map[string]bool
+				var states Rasps
 				e := json.Unmarshal([]byte(body), &states)
 				if e != nil {
 					log.Println(e)
@@ -67,8 +97,8 @@ func main() {
 
 				var cnt_open int
 				for _, open := range states {
-					log.Println(open["state"])
-					cnt_open += isOpened(open["state"]["opened"])
+					log.Println(open)
+					cnt_open += isOpened(open.State.Opened)
 				}
 				
 				if (cnt_open < 2) {
@@ -76,12 +106,14 @@ func main() {
 						Text: "Please ventilate!",
 					})
 					if err != nil {
-						panic(err)
+						log.Println(err)
+						continue
 					}
 
-					resp, err := http.Post(URI, DATA_CONTENT_TYPE, bytes.NewBuffer(data))
+					resp, err := http.Post(Cnf.Url, Cnf.Data_content_type, bytes.NewBuffer(data))
 					if err != nil {
-						panic(err)
+						log.Println(err)
+						continue
 					}
 					resp.Body.Close()
 				}
