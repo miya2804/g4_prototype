@@ -35,7 +35,7 @@ def serve(rasp):
 
     @app.route('/', methods=['GET'])
     def get():
-        opened = STATE
+        opened = rasp.get_state()
 
         resp = {'opened': opened}
         return Response(response=json.dumps(resp),
@@ -48,15 +48,11 @@ def serve(rasp):
         if open_ is None:
             return Response(response='Bad Request',
                             status=HTTPStatus.BAD_REQUEST)
-        STATE = open_
 
-        if STATE:
-            opened = True
-        else:
-            opened = False
+        rasp.set_state(open_)
 
         resp = {'success': True,
-                'opened': opened}
+                'opened': open_}
         return Response(response=json.dumps(resp),
                         status=HTTPStatus.OK)
 
