@@ -47,7 +47,7 @@ export default new Vuex.Store({
 });
 
 const getLatestVRasps = async function() {
-    let response = await axios.get('/api/rasp');
+    let response = await axios.get('/api/vrasp');
 
     let vRasps = [];
     if (response.status == 200) {
@@ -66,7 +66,7 @@ const getLatestVRasps = async function() {
 }
 
 const generateNewVRasp = async function() {
-    let response = axios.post('/api/rasp');
+    let response = axios.post('/api/vrasp');
     if (response.status == 200) {
         console.log('generate success!');
     }
