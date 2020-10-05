@@ -58,3 +58,8 @@ services:
       - ./db/init.d:/docker-entrypoint-initdb.d
     environment:
       - MYSQL_ROOT_PASSWORD=password
+
+  slack-mock-agent:
+    build: ./agents/slack/mock
+    volumes:
+      - ./agents/slack/mock:/go/src/github.com/agent
