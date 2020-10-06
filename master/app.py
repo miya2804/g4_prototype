@@ -105,32 +105,43 @@ def register_sensor():
     return Response(response=json.dumps(resp),
                     status=HTTPStatus.OK)
 
-@app.route('/api/rasp', methods=['GET'])
-def get_all():
-    body = requests.get('http://vrasps:8888/api/rasp').json()
-    return Response(response=json.dumps(body),
-                    status=HTTPStatus.OK)
-
-@app.route('/api/rasp/<rasp_id>', methods=['GET'])
-def get(rasp_id):
-    body = requests.get('http://vrasps:8888/api/rasp/{}'\
-                        .format(rasp_id)).json()
-    return Response(response=json.dumps(body),
-                    status=HTTPStatus.OK)
-
-@app.route('/api/rasp/<rasp_id>', methods=['POST'])
-def set(rasp_id):
+@app.route('/api/rasp', methods=['POST'])
+def set_rasp_state():
     payload = request.json
     data = {'open': bool(payload.get('open'))}
     headers = {'content-type': 'application/json'}
-    body = requests.post('http://vrasps:8888/api/rasp/{}'\
-                         .format(rasp_id),
+    body = requests.post('http://rasp:3000',
                          data=json.dumps(data),
                          headers=headers).json()
     return Response(response=json.dumps(body),
                     status=HTTPStatus.OK)
 
-@app.route('/api/rasp', methods=['POST'])
+@app.route('/api/vrasp', methods=['GET'])
+def get_all():
+    body = requests.get('http://vrasps:8888/api/rasp').json()
+    return Response(response=json.dumps(body),
+                    status=HTTPStatus.OK)
+
+@app.route('/api/vrasp/<vrasp_id>', methods=['GET'])
+def get(vrasp_id):
+    body = requests.get('http://vrasps:8888/api/rasp/{}'\
+                        .format(vrasp_id)).json()
+    return Response(response=json.dumps(body),
+                    status=HTTPStatus.OK)
+
+@app.route('/api/vrasp/<vrasp_id>', methods=['POST'])
+def set(vrasp_id):
+    payload = request.json
+    data = {'open': bool(payload.get('open'))}
+    headers = {'content-type': 'application/json'}
+    body = requests.post('http://vrasps:8888/api/rasp/{}'\
+                         .format(vrasp_id),
+                         data=json.dumps(data),
+                         headers=headers).json()
+    return Response(response=json.dumps(body),
+                    status=HTTPStatus.OK)
+
+@app.route('/api/vrasp', methods=['POST'])
 def new():
     body = requests.post('http://vrasps:8888/api/rasp').json()
     return Response(response=json.dumps(body),

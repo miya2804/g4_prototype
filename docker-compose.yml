@@ -9,22 +9,16 @@ services:
       - ./front/dist:/work/public
     command: ['python', 'app.py']
     links:
-      - rasp1
-      - rasp2
+      - rasp
       - vrasps
       - room
       - sensor
+      - discord-mock-agent
 
-  rasp1:
+  rasp:
     build: ./rasp
     volumes:
       - ./rasp/:/work
-    command: ['python', 'app.py']
-
-  rasp2:
-    build: ./rasp
-    volumes:
-      - ./rasp:/work
     command: ['python', 'app.py']
 
   vrasps:
@@ -63,3 +57,8 @@ services:
     build: ./agents/slack/mock
     volumes:
       - ./agents/slack/mock:/go/src/github.com/agent
+
+  discord-mock-agent:
+    build: ./agents/discord/mock
+    volumes:
+      - ./agents/discord/mock:/opt/app

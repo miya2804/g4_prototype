@@ -21,7 +21,7 @@ export default {
             }
             
             axios
-            .post('/api/rasp/'+this.id, requestBody)
+            .post('/api/vrasp/'+this.id, requestBody)
             .then(response => {
                 console.log('success');
             });
