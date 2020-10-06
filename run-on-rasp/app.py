@@ -47,6 +47,6 @@ if __name__ == '__main__':
         if current != prev:
             data = {'open': current}
             res = requests.post('',
-                                data=json.dums(data),
+                                data=json.dumps(data),
                                 headers=headers).json()
             prev = current
