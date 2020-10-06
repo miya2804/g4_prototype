@@ -36,11 +36,15 @@ def serve():
     server.start()
     server.wait_for_termination()
 
+
 if __name__ == '__main__':
     logging.basicConfig()
 
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setup(REEDSWITCH, GPIO.IN)
+
     prev = None
-    headers = {'Content-type':'application/json'}
+    headers = {'Content-type': 'application/json'}
 
     while True:
         current = not GPIO.input(REEDSWITCH)
