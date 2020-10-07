@@ -1,9 +1,11 @@
 import logging
 from concurrent import futures
 import random
-import RPi.GPIO as GPIO
+import json
 
 import grpc
+import RPi.GPIO as GPIO
+import requests
 
 from services import rasp_pb2, rasp_pb2_grpc
 
@@ -27,13 +29,28 @@ class RaspServicer(rasp_pb2_grpc.RaspServicer):
 def serve():
     GPIO.setmode(GPIO.BCM)
     GPIO.setup(REEDSWITCH, GPIO.IN)
-    
+
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     rasp_pb2_grpc.add_RaspServicer_to_server(RaspServicer(), server)
     server.add_insecure_port('[::]:50051')
     server.start()
     server.wait_for_termination()
 
+
 if __name__ == '__main__':
     logging.basicConfig()
-    serve()
+
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setup(REEDSWITCH, GPIO.IN)
+
+    prev = None
+    headers = {'Content-type': 'application/json'}
+
+    while True:
+        current = not GPIO.input(REEDSWITCH)
+        if current != prev:
+            data = {'open': current}
+            res = requests.post('',
+                                data=json.dumps(data),
+                                headers=headers).json()
+            prev = current
