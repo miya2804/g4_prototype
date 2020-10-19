@@ -1,0 +1,9 @@
+version: '3'
+services:
+  rasp:
+    image: send-rasp-value
+    volumes:
+      - .:/work
+    devices:
+      - '/dev/gpiomem'
+    command: ['python', 'app.py']
